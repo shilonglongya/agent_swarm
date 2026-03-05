@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DT_Project - 智能Agent集群</title>
+    
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="css/base/variables.css">
+    <link rel="stylesheet" href="css/base/reset.css">
+    <link rel="stylesheet" href="css/base/typography.css">
+    <link rel="stylesheet" href="css/animations/keyframes.css">
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/cards.css">
+    <link rel="stylesheet" href="css/components/forms.css">
+    <link rel="stylesheet" href="css/components/navigation.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/layouts/grid.css">
+    <link rel="stylesheet" href="css/pages/home.css">
+    
+    <style>
+        /* ========================================
+           Page-Specific Styles - Agent Swarm
+        ======================================== */
+        
+        :root {
+            --color-bg-primary: #000000;
+            --color-bg-secondary: #1C1C1E;
+            --color-bg-tertiary: #2C2C2E;
+            --color-text-primary: #F5F5F7;
+            --color-text-secondary: #86868B;
+            --color-text-tertiary: #636366;
+            --color-border: rgba(255, 255, 255, 0.1);
+            --color-border-light: rgba(255, 255, 255, 0.05);
+            --glass-bg: rgba(28, 28, 30, 0.72);
+            --glass-blur: blur(20px);
+            --agent-researcher: #FF6B6B;
+            --agent-analyst: #4ECDC4;
+            --agent-writer: #45B7D1;
+            --agent-coder: #96CEB4;
+            --agent-reviewer: #FFEAA7;
+            --agent-planner: #DDA0DD;
+            --agent-coordinator: #98D8C8;
+        }
+        
+        body {
+            background: var(--color-bg-primary);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .app-header {
+            text-align: center;
+            padding: 40px 24px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: 24px;
+            border: 1px solid var(--color-border);
+            margin-bottom: 24px;
+        }
+        
+        .app-title {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .app-subtitle {
+            font-size: 18px;
+            color: var(--color-text-secondary);
+        }
+        
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Left Panel */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Right Panel */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Card Styles */
+        .card {
+            background: var(--color-bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--color-border);
+            padding: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+        
+        /* Status Indicator */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: var(--color-bg-tertiary);
+        }
+        
+        .status-indicator.connected {
+            background: rgba(52, 199, 89, 0.15);
+            color: #34C759;
+        }
+        
+        .status-indicator.disconnected {
+            background: rgba(255, 59, 48, 0.15);
+            color: #FF3B30;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        
+        /* Form Elements */
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            color: var(--color-text-primary);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+        
+        .form-input::placeholder {
+            color: var(--color-text-tertiary);
+        }
+        
+        /* Task Input */
+        .task-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            color: var(--color-text-primary);
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .task-textarea:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            white-space: nowrap;
+        }
+        
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: scale(1.02);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--color-border);
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--color-text-secondary);
+        }
+        
+        .btn-ghost:hover {
+            background: var(--color-bg-tertiary);
+        }
+        
+        /* Execution Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            background: var(--color-bg-tertiary);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .mode-toggle-btn {
+            flex: 1;
+            padding: 8px 16px;
+            font-size: 13px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .mode-toggle-btn.active {
+            background: #007AFF;
+            color: white;
+        }
+        
+        /* Agent Cards */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        
+        .agent-card {
+            background: var(--color-bg-tertiary);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid var(--color-border);
+            transition: all 0.3s;
+        }
+        
+        .agent-card.pending {
+            opacity: 0.6;
+        }
+        
+        .agent-card.running {
+            border-color: #FF9500;
+            background: rgba(255, 149, 0, 0.1);
+            animation: pulse 1s infinite;
+        }
+        
+        .agent-card.completed {
+            border-color: #34C759;
+            background: rgba(52, 199, 89, 0.1);
+        }
+        
+        .agent-card.failed {
+            border-color: #FF3B30;
+            background: rgba(255, 59, 48, 0.1);
+        }
+        
+        .agent-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .agent-icon.researcher { background: var(--agent-researcher); }
+        .agent-icon.analyst { background: var(--agent-analyst); }
+        .agent-icon.writer { background: var(--agent-writer); }
+        .agent-icon.coder { background: var(--agent-coder); }
+        .agent-icon.reviewer { background: var(--agent-reviewer); color: #333; }
+        .agent-icon.planner { background: var(--agent-planner); }
+        .agent-icon.coordinator { background: var(--agent-coordinator); color: #333; }
+        .agent-icon.master { background: linear-gradient(135deg, #007AFF, #5856D6); }
+        
+        .agent-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .agent-role {
+            font-size: 11px;
+            color: var(--color-text-tertiary);
+        }
+        
+        /* Output Panel */
+        .output-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        /* Master Thinking Panel */
+        .thinking-panel {
+            background: var(--color-bg-tertiary);
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.6;
+            border-left: 3px solid #007AFF;
+        }
+        
+        /* Sub Agent Output */
+        .sub-output-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .sub-output-item {
+            background: var(--color-bg-tertiary);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+        
+        .sub-output-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--color-bg-secondary);
+            cursor: pointer;
+        }
+        
+        .sub-output-header:hover {
+            background: var(--color-bg-tertiary);
+        }
+        
+        .sub-output-content {
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.7;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        .sub-output-content.collapsed {
+            display: none;
+        }
+        
+        /* Final Output */
+        .final-output {
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(88, 86, 214, 0.1));
+            border: 1px solid #007AFF;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--color-bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007AFF, #5856D6);
+            border-radius: 2px;
+            transition: width 0.3s;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Log Panel */
+        .log-panel {
+            background: var(--color-bg-tertiary);
+            border-radius: 12px;
+            padding: 12px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 11px;
+        }
+        
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid var(--color-border-light);
+        }
+        
+        .log-time {
+            color: var(--color-text-tertiary);
+            margin-right: 8px;
+        }
+        
+        .log-master { color: #007AFF; }
+        .log-agent { color: #FF9500; }
+        .log-success { color: #34C759; }
+        .log-error { color: #FF3B30; }
+        
+        /* Search Results */
+        .search-results-list {
+            background: var(--color-bg-tertiary);
+            border-radius: 12px;
+            padding: 12px;
+            height: 250px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        
+        .search-result-item {
+            background: var(--color-bg-secondary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--color-border-light);
+            transition: all 0.2s ease;
+        }
+        
+        .search-result-item:hover {
+            border-color: #007AFF;
+            transform: translateY(-2px);
+        }
+        
+        .search-result-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .search-result-title {
+            font-weight: 600;
+            color: #007AFF;
+            margin-bottom: 6px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search-result-title a {
+            color: inherit;
+            text-decoration: none;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .search-result-title a:hover {
+            text-decoration: underline;
+        }
+        
+        .search-result-title .external-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.6;
+        }
+        
+        .search-result-snippet {
+            color: var(--color-text-secondary);
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        
+        .search-result-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--color-text-tertiary);
+        }
+        
+        .search-result-query {
+            background: rgba(0, 122, 255, 0.2);
+            color: #007AFF;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        .search-result-round {
+            background: rgba(255, 149, 0, 0.2);
+            color: #FF9500;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        .search-empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--color-text-tertiary);
+        }
+        
+        /* Spinner */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--color-text-tertiary);
+            border-top-color: #007AFF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 32px;
+            }
+            
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .agent-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Checkbox */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+        
+        .checkbox-label input {
+            width: 16px;
+            height: 16px;
+            accent-color: #007AFF;
+        }
+        
+        /* Stats */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-item {
+            flex: 1;
+            background: var(--color-bg-tertiary);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #007AFF;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: var(--color-text-tertiary);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header fade-up">
+            <h1 class="app-title">Agent Swarm</h1>
+            <p class="app-subtitle">DT_Project</p>
+        </header>
+        
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- API Config -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">API 配置</span>
+                        <div class="status-indicator disconnected" id="apiStatus">
+                            <span class="status-dot"></span>
+                            <span>未连接</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <input type="password" class="form-input" id="apiKey" placeholder="API Key" style="margin-bottom: 8px;">
+                        <input type="text" class="form-input" id="baseUrl" placeholder="Base URL (可选，默认 OpenAI)">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <div class="model-search-wrapper">
+                            <input type="text" class="form-input" id="modelSearch" placeholder="输入API Key后点击获取模型，或直接输入模型名称" oninput="filterModels(this.value)">
+                            <div class="model-list" id="modelList"></div>
+                        </div>
+                        <button class="btn btn-secondary" id="fetchModelsBtn" onclick="fetchModels()" style="width: 100%; margin-top: 8px;">
+                            获取模型列表
+                        </button>
+                    </div>
+                    
+                    <label class="checkbox-label" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="saveConfig">
+                        <span>保存配置</span>
+                    </label>
+                    
+                    <button class="btn btn-primary" id="configBtn" onclick="configureAPI()" style="width: 100%;">
+                        连接 API
+                    </button>
+                </div>
+                
+                <!-- Task Input -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">任务输入</span>
+                    </div>
+                    
+                    <!-- Mode Toggle -->
+                    <div class="mode-toggle">
+                        <button class="mode-toggle-btn active" id="modeSwarm" onclick="setMode('swarm')">
+                            Agent集群
+                        </button>
+                        <button class="mode-toggle-btn" id="modeSearch" onclick="setMode('search')">
+                            智能搜索
+                        </button>
+                        <button class="mode-toggle-btn" id="modeSimple" onclick="setMode('simple')">
+                            简单模式
+                        </button>
+                    </div>
+                    
+                    <textarea class="task-textarea" id="taskInput" placeholder="输入你的任务...
+例如：分析最新AI技术发展趋势并撰写报告"></textarea>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button class="btn btn-primary" id="executeBtn" onclick="executeTask()" disabled style="flex: 1;">
+                            执行任务
+                        </button>
+                        <button class="btn btn-ghost" onclick="clearTask()">
+                            清除
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">执行统计</span>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalTasks">0</div>
+                            <div class="stat-label">总任务数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalAgents">0</div>
+                            <div class="stat-label">Agent数量</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="avgTime">0s</div>
+                            <div class="stat-label">平均耗时</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Log -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">执行日志</span>
+                    </div>
+                    <div class="log-panel" id="logBox">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span>系统就绪，请配置API...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Results -->
+                <div class="card" id="searchResultsCard" style="display: none;">
+                    <div class="card-header">
+                        <span class="card-title">搜索结果</span>
+                        <span id="searchCount" style="color: var(--color-text-tertiary); font-size: 13px;"></span>
+                    </div>
+                    <div class="search-results-list" id="searchResultsList">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Agent Grid -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Agent 状态</span>
+                        <span id="agentCount" style="color: var(--color-text-tertiary); font-size: 13px;">等待任务...</span>
+                    </div>
+                    <div class="agent-grid" id="agentGrid">
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary);">
+                            配置API并输入任务后，Agent将开始工作
+                        </div>
+                    </div>
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-bar-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <!-- Master Thinking -->
+                <div class="card" id="thinkingCard" style="display: none;">
+                    <div class="card-header">
+                        <span class="card-title">主LLM 分析</span>
+                        <span class="spinner" id="thinkingSpinner"></span>
+                    </div>
+                    <div class="thinking-panel" id="thinkingOutput">
+                    </div>
+                </div>
+                
+                <!-- Sub Agent Outputs -->
+                <div class="card" id="subOutputCard" style="display: none;">
+                    <div class="card-header">
+                        <span class="card-title">子Agent 输出</span>
+                    </div>
+                    <div class="sub-output-list" id="subOutputList">
+                    </div>
+                </div>
+                
+                <!-- Final Output -->
+                <div class="card" id="finalOutputCard" style="display: none;">
+                    <div class="card-header">
+                        <span class="card-title">最终结果</span>
+                        <span id="finalTime" style="color: var(--color-text-tertiary); font-size: 13px;"></span>
+                    </div>
+                    <div class="final-output" id="finalOutput">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========================================
+        // State Management
+        // ========================================
+        
+        let isConfigured = false;
+        let executionMode = 'swarm'; // 'swarm' or 'simple'
+        let allModels = []; // 存储所有模型列表
+        let stats = {
+            totalTasks: 0,
+            totalAgents: 0,
+            totalTime: 0
+        };
+        
+        const API_BASE = 'http://localhost:5000/api';
+        
+        // Role icons mapping
+        const roleIcons = {
+            'researcher': 'R',
+            'analyst': 'A',
+            'writer': 'W',
+            'coder': 'C',
+            'reviewer': 'V',
+            'planner': 'P',
+            'coordinator': 'O',
+            'default': 'G'
+        };
+        
+        // ========================================
+        // Logging
+        // ========================================
+        
+        function log(message, type = 'info') {
+            const logBox = document.getElementById('logBox');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let timeClass = 'log-time';
+            let messageClass = '';
+            if (type === 'master') messageClass = 'log-master';
+            else if (type === 'agent') messageClass = 'log-agent';
+            else if (type === 'success') messageClass = 'log-success';
+            else if (type === 'error') messageClass = 'log-error';
+            
+            entry.innerHTML = `<span class="${timeClass}">${time}</span><span class="${messageClass}">${message}</span>`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+        
+        // ========================================
+        // Initialization
+        // ========================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedConfig();
+            
+            const apiKeyInput = document.getElementById('apiKey');
+            const fetchBtn = document.getElementById('fetchModelsBtn');
+            
+            apiKeyInput.addEventListener('input', function() {
+                if (this.value.trim().length > 0) {
+                    fetchBtn.disabled = false;
+                } else {
+                    fetchBtn.disabled = true;
+                }
+            });
+            
+            // Close model list when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.model-search-wrapper')) {
+                    const modelList = document.getElementById('modelList');
+                    if (modelList) modelList.style.display = 'none';
+                }
+            });
+            
+            log('系统就绪，请配置API', 'info');
+        });
+        
+        // ========================================
+        // Mode Toggle
+        // ========================================
+        
+        function setMode(mode) {
+            executionMode = mode;
+            document.getElementById('modeSwarm').classList.toggle('active', mode === 'swarm');
+            document.getElementById('modeSearch').classList.toggle('active', mode === 'search');
+            document.getElementById('modeSimple').classList.toggle('active', mode === 'simple');
+        }
+        
+        // ========================================
+        // Config Functions
+        // ========================================
+        
+        async function loadSavedConfig() {
+            try {
+                const response = await fetch(`${API_BASE}/saved-config`);
+                const data = await response.json();
+                
+                if (data.saved && data.config) {
+                    const config = data.config;
+                    if (config.baseUrl) {
+                        document.getElementById('baseUrl').value = config.baseUrl;
+                    }
+                    if (config.model) {
+                        document.getElementById('modelSearch').value = config.model;
+                    }
+                    if (config.hasKey) {
+                        log('检测到保存的配置，请输入API Key', 'info');
+                        document.getElementById('modelSearch').placeholder = '已保存配置，请输入API Key';
+                    }
+                }
+            } catch (error) {
+                console.log('加载配置失败:', error);
+            }
+        }
+        
+        async function fetchModels() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const fetchBtn = document.getElementById('fetchModelsBtn');
+            
+            if (!apiKey) {
+                log('请输入API Key', 'warning');
+                return;
+            }
+            
+            fetchBtn.disabled = true;
+            fetchBtn.innerHTML = '<span class="spinner"></span> 加载中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/models`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        apiKey: apiKey,
+                        baseUrl: baseUrl
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const models = data.models;
+                    allModels = models; // 保存到全局变量
+                    log(`已加载 ${models.length} 个模型，输入可搜索`, 'success');
+                    
+                    // Display all models initially
+                    displayModels(models);
+                } else {
+                    log(`加载模型失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`加载模型出错: ${error.message}`, 'error');
+            } finally {
+                fetchBtn.disabled = false;
+                fetchBtn.innerHTML = '获取模型列表';
+            }
+        }
+        
+        function selectModel(modelId) {
+            document.getElementById('modelSearch').value = modelId;
+            document.getElementById('modelList').style.display = 'none';
+            log(`已选择模型: ${modelId}`, 'info');
+        }
+        
+        // 显示模型列表
+        function displayModels(models) {
+            const modelList = document.getElementById('modelList');
+            if (models.length === 0) {
+                modelList.style.display = 'none';
+                return;
+            }
+            modelList.innerHTML = models.map(m => 
+                `<div class="model-item" onclick="selectModel('${m.id}')">${m.id}</div>`
+            ).join('');
+            modelList.style.display = 'block';
+        }
+        
+        // 过滤模型（联想搜索）
+        function filterModels(query) {
+            if (allModels.length === 0) return;
+            
+            const modelList = document.getElementById('modelList');
+            const searchInput = document.getElementById('modelSearch');
+            
+            if (!query || query.trim() === '') {
+                // 无输入时显示所有模型
+                displayModels(allModels.slice(0, 20));
+                return;
+            }
+            
+            // 过滤匹配的模型
+            const filtered = allModels.filter(m => 
+                m.id.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 20); // 最多显示20个
+            
+            displayModels(filtered);
+        }
+        
+        async function configureAPI() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const model = document.getElementById('modelSearch').value.trim() || 'gpt-4';
+            const configBtn = document.getElementById('configBtn');
+            const saveConfig = document.getElementById('saveConfig').checked;
+            
+            if (!apiKey) {
+                log('请输入API Key', 'warning');
+                return;
+            }
+            
+            configBtn.disabled = true;
+            configBtn.innerHTML = '<span class="spinner"></span> 连接中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        apiKey: apiKey,
+                        baseUrl: baseUrl,
+                        model: model,
+                        saveConfig: saveConfig
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    isConfigured = true;
+                    document.getElementById('apiStatus').className = 'status-indicator connected';
+                    document.getElementById('apiStatus').innerHTML = '<span class="status-dot"></span><span>已连接</span>';
+                    document.getElementById('executeBtn').disabled = false;
+                    log(`API已连接: ${data.message}`, 'success');
+                } else {
+                    log(`连接失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`连接出错: ${error.message}`, 'error');
+            } finally {
+                configBtn.disabled = false;
+                configBtn.innerHTML = '连接 API';
+            }
+        }
+        
+        // ========================================
+        // Execute Task
+        // ========================================
+        
+        async function executeTask() {
+            if (!isConfigured) {
+                log('请先配置API', 'warning');
+                return;
+            }
+            
+            const task = document.getElementById('taskInput').value.trim();
+            if (!task) {
+                log('请输入任务', 'warning');
+                return;
+            }
+            
+            const executeBtn = document.getElementById('executeBtn');
+            executeBtn.disabled = true;
+            executeBtn.innerHTML = '<span class="spinner"></span> 执行中...';
+            
+            // Clear previous outputs
+            clearOutputs();
+            
+            const startTime = Date.now();
+            log('开始执行任务...', 'master');
+            
+            // Show progress
+            document.getElementById('progressBar').style.display = 'block';
+            
+            // 根据模式选择不同的端点
+            let endpoint;
+            if (executionMode === 'swarm') {
+                endpoint = '/execute/agent-swarm';
+            } else if (executionMode === 'search') {
+                endpoint = '/api/search/multi';
+            } else {
+                endpoint = '/execute/simple';
+            }
+            
+            log(`执行模式: ${executionMode}`, 'master');
+            
+            // 如果是搜索模式，先检查API是否已配置
+            if (executionMode === 'search' && !isConfigured) {
+                log('搜索模式需要配置API', 'warning');
+                executeBtn.disabled = false;
+                executeBtn.innerHTML = '执行任务';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task: task, rounds: 3, numResults: 10 })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                let currentSubtaskId = null;
+                let currentSubtaskName = '';
+                let currentRole = '';
+                let currentRoleIcon = '';
+                let subtaskOutputs = {};
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                
+                                switch (data.type) {
+                                    case 'stage':
+                                        log(`阶段: ${data.message}`, 'master');
+                                        updateProgress(data.stage);
+                                        // 确保thinking card显示
+                                        document.getElementById('thinkingCard').style.display = 'block';
+                                        break;
+                                        
+                                    case 'master_thinking':
+                                        // 确保thinking card显示
+                                        document.getElementById('thinkingCard').style.display = 'block';
+                                        showMasterThinking(data.chunk);
+                                        break;
+                                        
+                                    case 'decomposition':
+                                        log(`任务分解: ${data.subtask_count} 个子任务`, 'success');
+                                        displayAgentGrid(data.subtasks, true);  // true = keep existing cards
+                                        document.getElementById('agentCount').textContent = `Master + ${data.subtask_count} 个子Agent`;
+                                        document.getElementById('thinkingCard').style.display = 'block';
+                                        document.getElementById('subOutputCard').style.display = 'block';
+                                        // 自动滚动到底部
+                                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                                        break;
+                                        
+                                    case 'subtask_start':
+                                        log(`[${data.role_icon}] ${data.subtask_name} 开始执行...`, 'agent');
+                                        updateAgentStatus(data.subtask_id, 'running', data.role, data.role_icon);
+                                        currentSubtaskId = data.subtask_id;
+                                        currentSubtaskName = data.subtask_name;
+                                        currentRole = data.role;
+                                        currentRoleIcon = data.role_icon;
+                                        subtaskOutputs[data.subtask_id] = '';
+                                        break;
+                                        
+                                    case 'subtask_stream':
+                                        if (subtaskOutputs[data.subtask_id] !== undefined) {
+                                            subtaskOutputs[data.subtask_id] += data.chunk;
+                                            updateSubtaskOutput(data.subtask_id, subtaskOutputs[data.subtask_id]);
+                                        }
+                                        break;
+                                        
+                                    case 'subtask_done':
+                                        log(`[${data.role_icon}] ${data.subtask_name} 执行完成`, 'success');
+                                        updateAgentStatus(data.subtask_id, 'completed', data.role, data.role_icon);
+                                        break;
+                                        
+                                    case 'final_stream':
+                                        appendFinalOutput(data.chunk);
+                                        break;
+                                        
+                                    case 'done':
+                                        const elapsed = (Date.now() - startTime) / 1000;
+                                        log(`执行完成！耗时: ${elapsed.toFixed(2)}秒`, 'success');
+                                        showFinalOutput(data.final_output, elapsed);
+                                        updateStats(elapsed, data.subtask_count || 1);
+                                        document.getElementById('progressFill').style.width = '100%';
+                                        break;
+                                        
+                                    // 搜索模式专用事件
+                                    case 'round_start':
+                                        log(`第 ${data.round}/${data.total_rounds} 轮搜索: ${data.query}`, 'master');
+                                        updateProgress('search_' + data.round);
+                                        showSearchRound(data);
+                                        break;
+                                        
+                                    case 'search_progress':
+                                        log(`第 ${data.round} 轮搜索: ${data.query}`, 'master');
+                                        document.getElementById('thinkingCard').style.display = 'block';
+                                        break;
+                                        
+                                    case 'search_result':
+                                        log(`第 ${data.round} 轮搜索完成，获取 ${data.results.length} 条结果`, 'success');
+                                        showSearchResults(data);
+                                        break;
+                                        
+                                    case 'search_results':
+                                        log(`第 ${data.round} 轮搜索完成，获取 ${data.results.length} 条结果`, 'success');
+                                        showSearchResults(data);
+                                        break;
+                                        
+                                    case 'subtask_search_result':
+                                        log(`[${data.subtask_id}] 搜索完成，获取 ${data.results.length} 条结果`, 'agent');
+                                        showSearchResults(data);
+                                        break;
+                                        
+                                    case 'llm_analysis':
+                                        log(`LLM分析: ${data.analysis.substring(0, 50)}...`, 'master');
+                                        showLlmAnalysis(data);
+                                        break;
+                                        
+                                    case 'final_answer':
+                                        appendFinalOutput(data.answer);
+                                        break;
+                                        
+                                    case 'error':
+                                        log(`执行失败: ${data.message}`, 'error');
+                                        break;
+                                }
+                            } catch (e) {
+                                // Ignore parse errors
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                log(`执行出错: ${error.message}`, 'error');
+            } finally {
+                executeBtn.disabled = false;
+                executeBtn.innerHTML = '执行任务';
+            }
+        }
+        
+        // ========================================
+        // UI Update Functions
+        // ========================================
+        
+        function clearOutputs() {
+            document.getElementById('thinkingOutput').innerHTML = '';
+            document.getElementById('thinkingCard').style.display = 'none';
+            document.getElementById('subOutputList').innerHTML = '';
+            document.getElementById('subOutputCard').style.display = 'none';
+            document.getElementById('finalOutput').innerHTML = '';
+            document.getElementById('finalOutputCard').style.display = 'none';
+            document.getElementById('searchResultsList').innerHTML = '';
+            document.getElementById('searchResultsCard').style.display = 'none';
+            document.getElementById('agentGrid').innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary);">
+                    Agent工作中...
+                </div>
+            `;
+            document.getElementById('progressFill').style.width = '0%';
+        }
+        
+        function clearTask() {
+            document.getElementById('taskInput').value = '';
+            clearOutputs();
+            document.getElementById('agentCount').textContent = '等待任务...';
+            document.getElementById('progressBar').style.display = 'none';
+            log('任务已清除', 'info');
+        }
+        
+        function showMasterThinking(content) {
+            const output = document.getElementById('thinkingOutput');
+            output.innerHTML += content.replace(/\n/g, '<br>');
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function displayAgentGrid(subtasks, keepExisting = false) {
+            const grid = document.getElementById('agentGrid');
+            
+            // 如果保留现有卡片，获取现有的Master卡片
+            let masterCardHTML = '';
+            if (keepExisting) {
+                const existingMaster = document.getElementById('agent-Master');
+                if (existingMaster) {
+                    masterCardHTML = existingMaster.outerHTML;
+                } else {
+                    // 添加Master卡片
+                    masterCardHTML = `
+                        <div class="agent-card completed" id="agent-Master">
+                            <div class="agent-icon master">M</div>
+                            <div class="agent-name">Master</div>
+                            <div class="agent-role">主编排器</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            const subtasksHTML = subtasks.map(st => `
+                <div class="agent-card pending" id="agent-${st.id}">
+                    <div class="agent-icon ${st.role}">${roleIcons[st.role] || 'G'}</div>
+                    <div class="agent-name">${st.name}</div>
+                    <div class="agent-role">${getRoleName(st.role)}</div>
+                </div>
+            `).join('');
+            
+            grid.innerHTML = masterCardHTML + subtasksHTML;
+        }
+        
+        function getRoleName(role) {
+            const names = {
+                'researcher': '研究员',
+                'analyst': '分析师',
+                'writer': '写作者',
+                'coder': '程序员',
+                'reviewer': '审查员',
+                'planner': '规划师',
+                'coordinator': '协调员'
+            };
+            return names[role] || role;
+        }
+        
+        function updateAgentStatus(subtaskId, status, role, roleIcon) {
+            const card = document.getElementById(`agent-${subtaskId}`);
+            if (card) {
+                card.className = `agent-card ${status}`;
+            }
+            
+            // Create or update output item
+            if (status === 'running') {
+                const list = document.getElementById('subOutputList');
+                const existing = document.getElementById(`output-${subtaskId}`);
+                if (!existing) {
+                    const item = document.createElement('div');
+                    item.className = 'sub-output-item';
+                    item.id = `output-${subtaskId}`;
+                    item.innerHTML = `
+                        <div class="sub-output-header" onclick="toggleOutput('${subtaskId}')">
+                            <div class="agent-icon ${role}" style="width: 32px; height: 32px; font-size: 14px; margin: 0;">${roleIcon}</div>
+                            <div style="flex: 1;">
+                                <div class="agent-name">${document.querySelector(`#agent-${subtaskId} .agent-name`)?.textContent || subtaskId}</div>
+                                <div class="agent-role">${getRoleName(role)}</div>
+                            </div>
+                            <span class="spinner"></span>
+                        </div>
+                        <div class="sub-output-content" id="content-${subtaskId}"></div>
+                    `;
+                    list.appendChild(item);
+                    // 自动滚动到底部
+                    list.scrollTop = list.scrollHeight;
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }
+            } else if (status === 'completed') {
+                const header = document.querySelector(`#output-${subtaskId} .sub-output-header`);
+                if (header) {
+                    header.innerHTML = `
+                        <div class="agent-icon ${role}" style="width: 32px; height: 32px; font-size: 14px; margin: 0;">${roleIcon}</div>
+                        <div style="flex: 1;">
+                            <div class="agent-name">${document.querySelector(`#agent-${subtaskId} .agent-name`)?.textContent || subtaskId}</div>
+                            <div class="agent-role">${getRoleName(role)}</div>
+                        </div>
+                        <span style="color: #34C759; font-size: 12px;">已完成</span>
+                    `;
+                }
+            }
+        }
+        
+        function updateSubtaskOutput(subtaskId, content) {
+            const contentEl = document.getElementById(`content-${subtaskId}`);
+            if (contentEl) {
+                contentEl.textContent = content;
+                // 自动滚动到底部
+                contentEl.scrollTop = contentEl.scrollHeight;
+            }
+        }
+        
+        // 自动滚动到底部的通用函数
+        function autoScrollToBottom(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollTop = element.scrollHeight;
+            }
+        }
+        
+        function toggleOutput(subtaskId) {
+            const content = document.getElementById(`content-${subtaskId}`);
+            if (content) {
+                content.classList.toggle('collapsed');
+            }
+        }
+        
+        function appendFinalOutput(content) {
+            const output = document.getElementById('finalOutput');
+            output.innerHTML += content.replace(/\n/g, '<br>');
+            output.scrollTop = output.scrollHeight;
+            // 滚动整个页面到底部
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+        
+        function showFinalOutput(content, elapsed) {
+            const card = document.getElementById('finalOutputCard');
+            card.style.display = 'block';
+            document.getElementById('finalOutput').innerHTML = content.replace(/\n/g, '<br>');
+            document.getElementById('finalTime').textContent = `耗时: ${elapsed.toFixed(2)}s`;
+            // 自动滚动到底部
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+        
+        function updateProgress(stage) {
+            const fill = document.getElementById('progressFill');
+            const stages = {
+                'master_analyze': '10%',
+                'sub_agents_execute': '30%',
+                'aggregation': '90%'
+            };
+            fill.style.width = stages[stage] || '50%';
+        }
+        
+        function updateStats(time, agentCount) {
+            stats.totalTasks++;
+            stats.totalAgents += agentCount;
+            stats.totalTime += time;
+            
+            document.getElementById('totalTasks').textContent = stats.totalTasks;
+            document.getElementById('totalAgents').textContent = stats.totalAgents;
+            document.getElementById('avgTime').textContent = (stats.totalTime / stats.totalTasks).toFixed(1) + 's';
+        }
+        
+        // ========================================
+        // Search Mode UI Functions
+        // ========================================
+        
+        function showSearchRound(data) {
+            // 显示搜索轮次信息
+            const thinkingCard = document.getElementById('thinkingCard');
+            thinkingCard.style.display = 'block';
+
+            const output = document.getElementById('thinkingOutput');
+            output.innerHTML += `<div style="margin: 8px 0; padding: 8px; background: rgba(0,122,255,0.1); border-radius: 6px;">
+                <strong>搜索中: 第 ${data.round}/${data.total_rounds} 轮</strong><br>
+                关键词: ${data.query}
+            </div>`;
+            output.scrollTop = output.scrollHeight;
+
+            // 显示Agent网格为搜索状态
+            document.getElementById('agentGrid').innerHTML = `
+                <div class="agent-card running" style="grid-column: 1/-1;">
+                    <div class="agent-icon researcher">[S]</div>
+                    <div class="agent-name">第 ${data.round}/${data.total_rounds} 轮</div>
+                    <div class="agent-role">搜索中...</div>
+                </div>
+            `;
+            document.getElementById('agentCount').textContent = `搜索第 ${data.round}/${data.total_rounds} 轮`;
+        }
+        
+        function showSearchResults(data) {
+            // 显示搜索结果卡片
+            const searchCard = document.getElementById('searchResultsCard');
+            const searchList = document.getElementById('searchResultsList');
+            const searchCount = document.getElementById('searchCount');
+
+            searchCard.style.display = 'block';
+
+            // 更新计数
+            const totalResults = data.results ? data.results.length : 0;
+            searchCount.textContent = `第 ${data.round} 轮 - ${totalResults} 条结果`;
+
+            // 构建搜索结果HTML
+            const resultsHtml = (data.results || []).slice(0, 10).map((r, i) => {
+                const title = r.title || '无标题';
+                const content = r.content || '';
+                // 确保URL有效
+                let url = r.url || '';
+                if (!url || url === '#' || url === '') {
+                    // 如果没有URL，创建一个搜索链接
+                    url = `https://www.baidu.com/s?wd=${encodeURIComponent(title)}`;
+                }
+                const snippet = content.length > 150 ? content.substring(0, 150) + '...' : content;
+
+                return `
+                    <div class="search-result-item" onclick="window.open('${url}', '_blank')" style="cursor: pointer;">
+                        <div class="search-result-title">
+                            <a href="${url}" target="_blank" title="${title}" onclick="event.stopPropagation();">${title}</a>
+                            <svg class="external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </div>
+                        <div class="search-result-snippet">${snippet}</div>
+                        <div class="search-result-meta">
+                            <span class="search-result-query">关键词: ${data.query}</span>
+                            <span class="search-result-round">第 ${data.round} 轮</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 检查是否已有该轮结果，有则追加
+            const roundId = `search-round-${data.round}`;
+            const existingRound = document.getElementById(roundId);
+            
+            if (existingRound) {
+                existingRound.innerHTML = resultsHtml;
+            } else {
+                const roundDiv = document.createElement('div');
+                roundDiv.id = roundId;
+                roundDiv.innerHTML = resultsHtml;
+                searchList.appendChild(roundDiv);
+            }
+            
+            // 滚动到最新结果
+            searchList.scrollTop = searchList.scrollHeight;
+            
+            // 自动滚动整个页面到底部
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            
+            // 同时也在子Agent输出中显示（保持兼容性）
+            const subOutputList = document.getElementById('subOutputList');
+            subOutputList.style.display = 'block';
+            
+            const subRoundId = `sub-search-round-${data.round}`;
+            const subExisting = document.getElementById(subRoundId);
+            if (subExisting) {
+                subExisting.remove();
+            }
+            
+            const resultsHtml2 = data.results.slice(0, 5).map((r, i) => `
+                <div style="margin-bottom: 8px; padding: 8px; background: var(--color-bg-secondary); border-radius: 6px;">
+                    <div style="font-weight: 500; margin-bottom: 4px;">${i+1}. ${r.title}</div>
+                    <div style="font-size: 12px; color: var(--color-text-secondary);">${r.content.substring(0, 150)}...</div>
+                </div>
+            `).join('');
+            
+            const item = document.createElement('div');
+            item.className = 'sub-output-item';
+            item.id = subRoundId;
+            item.innerHTML = `
+                <div class="sub-output-header">
+                    <div class="agent-icon researcher" style="width: 32px; height: 32px; font-size: 14px; margin: 0;">[S]</div>
+                    <div style="flex: 1;">
+                        <div class="agent-name">第 ${data.round} 轮搜索结果</div>
+                        <div class="agent-role">${data.results.length} 条结果</div>
+                    </div>
+                    <span style="color: #34C759; font-size: 12px;">完成</span>
+                </div>
+                <div class="sub-output-content" style="max-height: 400px;">
+                    ${resultsHtml2}
+                </div>
+            `;
+            subOutputList.appendChild(item);
+            
+            // 确保subOutputCard显示
+            document.getElementById('subOutputCard').style.display = 'block';
+        }
+        
+        function showLlmAnalysis(data) {
+            // 显示LLM分析结果
+            const thinkingCard = document.getElementById('thinkingCard');
+            thinkingCard.style.display = 'block';
+
+            const output = document.getElementById('thinkingOutput');
+            output.innerHTML += `<div style="margin: 8px 0; padding: 8px; background: rgba(88,86,214,0.1); border-radius: 6px; border-left: 3px solid #5856D6;">
+                <strong>[分析] LLM分析 (第${data.round}轮)</strong><br>
+                ${data.analysis}<br>
+                <span style="color: ${data.need_more ? '#FF9500' : '#34C759'};">
+                    ${data.need_more ? '-> 继续搜索: ' + data.next_query : '[完成] 搜索足够，生成最终答案'}
+                </span>
+            </div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+    </script>
+    
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 20px; color: var(--color-text-secondary); font-size: 12px; border-top: 1px solid var(--color-bg-tertiary); margin-top: 20px;">
+        &copy; DT_Project. All rights reserved.
+    </footer>
+</body>
+</html>

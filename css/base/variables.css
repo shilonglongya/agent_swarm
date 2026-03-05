@@ -1,0 +1,126 @@
+/* ========================================
+   CSS Variables - Design Tokens
+   Apple Design Language
+======================================== */
+:root {
+    /* Colors - Light Mode */
+    --color-primary: #007AFF;
+    --color-primary-hover: #0056CC;
+    --color-primary-light: rgba(0, 122, 255, 0.1);
+    
+    --color-success: #34C759;
+    --color-warning: #FF9500;
+    --color-error: #FF3B30;
+    
+    --color-bg-primary: #FFFFFF;
+    --color-bg-secondary: #F5F5F7;
+    --color-bg-tertiary: #E5E5EA;
+    --color-bg-glass: rgba(255, 255, 255, 0.72);
+    
+    --color-text-primary: #1D1D1F;
+    --color-text-secondary: #86868B;
+    --color-text-tertiary: #AEAEB2;
+    --color-text-inverse: #FFFFFF;
+    
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-border-light: rgba(0, 0, 0, 0.04);
+    
+    /* Dark Mode */
+    --color-bg-primary-dark: #000000;
+    --color-bg-secondary-dark: #1C1C1E;
+    --color-bg-tertiary-dark: #2C2C2E;
+    --color-bg-glass-dark: rgba(28, 28, 30, 0.72);
+    
+    --color-text-primary-dark: #F5F5F7;
+    --color-text-secondary-dark: #86868B;
+    --color-text-tertiary-dark: #636366;
+    
+    --color-border-dark: rgba(255, 255, 255, 0.1);
+    
+    /* Typography */
+    --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --font-family-mono: "SF Mono", Monaco, "Courier New", monospace;
+    
+    --font-size-xs: 11px;
+    --font-size-sm: 13px;
+    --font-size-base: 15px;
+    --font-size-md: 17px;
+    --font-size-lg: 20px;
+    --font-size-xl: 24px;
+    --font-size-2xl: 28px;
+    --font-size-3xl: 34px;
+    --font-size-4xl: 40px;
+    --font-size-5xl: 48px;
+    
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.7;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-base: 16px;
+    --spacing-lg: 20px;
+    --spacing-xl: 24px;
+    --spacing-2xl: 32px;
+    --spacing-3xl: 40px;
+    --spacing-4xl: 48px;
+    --spacing-5xl: 64px;
+    --spacing-6xl: 80px;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+    --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    
+    /* Glass Effect */
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-blur: blur(20px);
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.25s ease;
+    --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* Z-Index */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal: 300;
+    --z-toast: 400;
+    
+    /* Container */
+    --container-max: 1200px;
+    --container-padding: 20px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-bg-primary: var(--color-bg-primary-dark);
+        --color-bg-secondary: var(--color-bg-secondary-dark);
+        --color-bg-tertiary: var(--color-bg-tertiary-dark);
+        --color-text-primary: var(--color-text-primary-dark);
+        --color-text-secondary: var(--color-text-secondary-dark);
+        --color-text-tertiary: var(--color-text-tertiary-dark);
+        --color-border: var(--color-border-dark);
+        --glass-bg: var(--color-bg-glass-dark);
+    }
+}

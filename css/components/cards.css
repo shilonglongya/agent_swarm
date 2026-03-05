@@ -1,0 +1,183 @@
+/* ========================================
+   Card Components
+   Apple Glassmorphism Style
+======================================== */
+
+.card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    transition: all var(--transition-base);
+}
+
+.card-hover {
+    cursor: pointer;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+}
+
+/* Card Variants */
+.card-solid {
+    background: var(--color-bg-secondary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.card-glass {
+    background: var(--glass-bg);
+}
+
+.card-outline {
+    background: transparent;
+    border: 1px solid var(--color-border);
+}
+
+/* Card Sizes */
+.card-sm {
+    padding: var(--spacing-base);
+    border-radius: var(--radius-lg);
+}
+
+.card-lg {
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-2xl);
+}
+
+.card-xl {
+    padding: var(--spacing-3xl);
+}
+
+/* Card Sections */
+.card-header {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.card-body {
+    flex: 1;
+}
+
+.card-footer {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border-light);
+}
+
+/* Stat Card */
+.stat-card {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    background: var(--color-bg-tertiary);
+}
+
+.stat-value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-sm);
+}
+
+/* Subtask Card */
+.subtask-card {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-base);
+    margin-bottom: var(--spacing-sm);
+    transition: all var(--transition-base);
+}
+
+.subtask-card.executing {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.subtask-card.completed {
+    border-color: var(--color-success);
+    background: rgba(52, 199, 89, 0.1);
+}
+
+.subtask-card.error {
+    border-color: var(--color-error);
+    background: rgba(255, 59, 48, 0.1);
+}
+
+.subtask-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.subtask-title {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+}
+
+.subtask-status {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-secondary);
+}
+
+.subtask-status.executing {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.subtask-status.completed {
+    background: rgba(52, 199, 89, 0.15);
+    color: var(--color-success);
+}
+
+.subtask-status.error {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--color-error);
+}
+
+.subtask-desc {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.subtask-output {
+    display: none;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-sm);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.subtask-card.completed .subtask-output {
+    display: block;
+}

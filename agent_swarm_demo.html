@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Swarm 可视化演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #1e293b;
+            --bg-card: #334155;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: var(--text-light);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h2 .icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .task-input {
+            width: 100%;
+            min-height: 120px;
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-light);
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3b82f6;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* API 配置区域 */
+        .api-config {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .api-config h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status-connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* 流程可视化区域 */
+        .flow-container {
+            grid-column: 1 / -1;
+        }
+
+        .flow-stages {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 20px 0;
+            overflow-x: auto;
+        }
+
+        .stage {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            padding: 15px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .stage.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .stage.completed {
+            border-color: var(--success);
+        }
+
+        .stage.error {
+            border-color: var(--danger);
+        }
+
+        .stage-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stage.active .stage-icon {
+            background: var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        .stage.completed .stage-icon {
+            background: var(--success);
+        }
+
+        .stage.error .stage-icon {
+            background: var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .stage-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stage-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .arrow {
+            font-size: 24px;
+            color: var(--text-muted);
+            align-self: center;
+        }
+
+        /* 任务分解显示 */
+        .decomposition-result {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .subtask-item {
+            background: var(--bg-dark);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .subtask-item .subtask-id {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .subtask-item .subtask-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .subtask-item .subtask-agent {
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        /* 并行执行可视化 */
+        .execution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .agent-card {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .agent-card.executing {
+            border-color: var(--warning);
+            animation: executing 1s infinite;
+        }
+
+        .agent-card.completed {
+            border-color: var(--success);
+        }
+
+        .agent-card.failed {
+            border-color: var(--danger);
+        }
+
+        @keyframes executing {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .agent-role {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .agent-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-muted);
+        }
+
+        .status-executing {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* 结果汇总 */
+        .result-output {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            font-size: 13px;
+        }
+
+        .meta-item .label {
+            color: var(--text-muted);
+        }
+
+        .meta-item .value {
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        /* 日志区域 */
+        .log-container {
+            grid-column: 1 / -1;
+        }
+
+        .log-box {
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            margin-right: 10px;
+        }
+
+        .log-info { color: #60a5fa; }
+        .log-success { color: var(--success); }
+        .log-warning { color: var(--warning); }
+        .log-error { color: var(--danger); }
+
+        /* 统计信息 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 子任务列表样式 */
+        .subtask-list {
+            margin: 20px 0;
+        }
+
+        .subtask-list h3 {
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .subtask-item {
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .subtask-item.executing {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .subtask-item.completed {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .subtask-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .subtask-icon {
+            font-size: 18px;
+        }
+
+        .subtask-title {
+            flex: 1;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .subtask-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-muted);
+        }
+
+        .subtask-status.executing {
+            background: rgba(37, 99, 235, 0.2);
+            color: var(--primary);
+        }
+
+        .subtask-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .subtask-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .subtask-output {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .subtask-item.completed .subtask-output {
+            display: block;
+        }
+
+        .subtask-output pre {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-light);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* 流式输出区域 */
+        .streaming-output {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* 最终结果 */
+        .final-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+        }
+
+        .final-result h3 {
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+
+        .result-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-light);
+            white-space: pre-wrap;
+        }
+
+        /* 模型搜索 */
+        .model-search-container {
+            position: relative;
+        }
+
+        .model-search-input {
+            width: 100%;
+            padding: 10px 12px;
+            padding-left: 36px;
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .model-search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .model-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 250px;
+            overflow-y: auto;
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            margin-top: 4px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .model-list.show {
+            display: block;
+        }
+
+        .model-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s;
+        }
+
+        .model-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .model-item.selected {
+            background: rgba(37, 99, 235, 0.2);
+            border-left: 3px solid var(--primary);
+        }
+
+        .model-item-name {
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .model-item-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .model-list-header {
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .no-models {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .fetch-models-btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Agent Swarm 可视化演示</h1>
+            <p>多代理协作框架 - 动态任务分解 · 并行执行 · 智能汇总</p>
+        </header>
+
+        <!-- 统计信息 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalTasks">0</div>
+                <div class="stat-label">总任务数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalSubtasks">0</div>
+                <div class="stat-label">子任务数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgTime">0s</div>
+                <div class="stat-label">平均耗时</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">成功率</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- API 配置 -->
+            <div class="card">
+                <h2><span class="icon">🔑</span> API 配置</h2>
+                <div class="api-config">
+                    <div class="status-indicator" id="apiStatus">
+                        <span class="status-dot"></span>
+                        <span>未连接</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="输入你的 API Key">
+                </div>
+                <div class="form-group">
+                    <label>API Base URL (可选)</label>
+                    <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1">
+                </div>
+                <div class="form-group">
+                    <label>模型</label>
+                    <div class="model-search-container">
+                        <span class="search-icon"></span>
+                        <input type="text" id="modelSearch" class="model-search-input" placeholder="输入 API Key 后点击获取模型..." oninput="filterModels()" onclick="toggleModelList()">
+                        <div class="model-list" id="modelList">
+                            <div class="model-list-header">
+                                输入 API Key 后点击"获取模型"按钮
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selectedModel" value="">
+                    <button class="btn btn-secondary fetch-models-btn" id="fetchModelsBtn" onclick="fetchModels()" disabled>
+                        获取模型列表
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="saveConfig">
+                        <span>保存配置（下次自动填充）</span>
+                    </label>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-success" id="configBtn" onclick="configureAPI()">
+                        连接 API
+                    </button>
+                    <span id="savedIndicator" style="color: var(--success); font-size: 12px; display: none;">
+                        [已保存]
+                    </span>
+                </div>
+            </div>
+
+            <!-- 任务输入 -->
+            <div class="card">
+                <h2><span class="icon"></span> 任务输入</h2>
+                <textarea class="task-input" id="taskInput" placeholder="请输入要执行的任务...
+例如：研究人工智能在医疗诊断领域的最新进展"></textarea>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="executeBtn" onclick="executeTask()" disabled>
+                        ▶ 执行任务
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadExample()">
+                        加载示例
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearTask()">
+                        清空
+                    </button>
+                </div>
+            </div>
+
+            <!-- 配置选项 -->
+            <div class="card">
+                <h2><span class="icon">⚙️</span> 配置选项</h2>
+                <div class="form-group">
+                    <label>汇总策略</label>
+                    <select id="strategy">
+                        <option value="synthesis">综合汇总 (推荐)</option>
+                        <option value="hierarchical">分层汇总</option>
+                        <option value="sequential">顺序汇总</option>
+                        <option value="consensus">共识汇总</option>
+                        <option value="parallel">简单合并</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>并行数量: <span id="parallelCountValue">5</span></label>
+                    <input type="range" id="parallelCount" min="1" max="10" value="5" oninput="updateParallelCount(this.value)">
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="enableStream" checked>
+                        <span>流式输出（实时显示输出）</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="enableReflection" checked>
+                        <span>启用反思机制</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 状态显示 -->
+            <div class="card">
+                <h2><span class="icon"></span> 执行状态</h2>
+                <div id="executionStatus" style="color: var(--text-muted); text-align: center; padding: 20px;">
+                    等待配置 API 和输入任务...
+                </div>
+            </div>
+
+            <!-- 流程可视化 -->
+            <div class="card flow-container">
+                <h2><span class="icon">🔄</span> 执行流程</h2>
+                <div class="flow-stages">
+                    <div class="stage" id="stage-config">
+                        <div class="stage-icon"></div>
+                        <div class="stage-title">配置</div>
+                        <div class="stage-desc">API 连接</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="stage" id="stage-decompose">
+                        <div class="stage-icon"></div>
+                        <div class="stage-title">任务分解</div>
+                        <div class="stage-desc">智能拆分子任务</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="stage" id="stage-execute">
+                        <div class="stage-icon"></div>
+                        <div class="stage-title">并行执行</div>
+                        <div class="stage-desc">子代理协同工作</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="stage" id="stage-aggregate">
+                        <div class="stage-icon"></div>
+                        <div class="stage-title">结果汇总</div>
+                        <div class="stage-desc">智能整合输出</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="stage" id="stage-complete">
+                        <div class="stage-icon"></div>
+                        <div class="stage-title">完成</div>
+                        <div class="stage-desc">输出最终结果</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务分解结果 -->
+            <div class="card">
+                <h2><span class="icon"></span> 任务分解</h2>
+                <div class="decomposition-result" id="decompositionResult">
+                    <div style="color: var(--text-muted); text-align: center; padding: 40px;">
+                        等待任务执行...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 并行执行 -->
+            <div class="card">
+                <h2><span class="icon"></span> 并行执行</h2>
+                <div class="execution-grid" id="executionGrid">
+                    <div style="color: var(--text-muted); text-align: center; padding: 40px; grid-column: 1 / -1;">
+                        等待执行...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结果汇总 -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2><span class="icon"></span> 执行结果</h2>
+                <div class="result-output" id="resultOutput">
+                    <div style="color: var(--text-muted); text-align: center; padding: 40px;">
+                        等待执行完成...
+                    </div>
+                </div>
+                <div class="result-meta" id="resultMeta" style="display: none;">
+                    <div class="meta-item">
+                        <span class="label">状态: </span>
+                        <span class="value" id="resultStatus">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="label">耗时: </span>
+                        <span class="value" id="resultTime">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="label">子任务: </span>
+                        <span class="value" id="resultSubtasks">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="label">并行组: </span>
+                        <span class="value" id="resultGroups">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日志 -->
+            <div class="card log-container">
+                <h2><span class="icon">📜</span> 执行日志</h2>
+                <div class="log-box" id="logBox">
+                    <div class="log-entry">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-info">系统就绪，请先配置 API...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状态管理
+        let isConfigured = false;
+        let stats = {
+            totalTasks: 0,
+            totalSubtasks: 0,
+            totalTime: 0,
+            successCount: 0
+        };
+
+        // 代理角色映射
+        const roleIcons = {
+            'researcher': '',
+            'analyst': '',
+            'writer': '',
+            'coder': '',
+            'reviewer': ''
+        };
+
+        // 模型列表
+        let availableModels = [];
+        let filteredModels = [];
+
+        // 示例任务
+        const exampleTasks = [
+            "研究人工智能在医疗诊断领域的最新进展，包括主要技术、成功案例、挑战和未来趋势",
+            "分析Python和JavaScript在Web开发中的优缺点对比",
+            "撰写一篇关于量子计算发展现状的文章"
+        ];
+
+        // API 基础地址
+        const API_BASE = 'http://localhost:5000/api';
+
+        // 日志函数
+        function log(message, type = 'info') {
+            const logBox = document.getElementById('logBox');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">${time}</span><span class="log-${type}">${message}</span>`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // 监听 API Key 输入，启用获取模型按钮
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKeyInput = document.getElementById('apiKey');
+            const fetchBtn = document.getElementById('fetchModelsBtn');
+            
+            // 加载保存的配置
+            loadSavedConfig();
+            
+            apiKeyInput.addEventListener('input', function() {
+                if (this.value.trim().length > 0) {
+                    fetchBtn.disabled = false;
+                    document.getElementById('modelSearch').placeholder = '点击"获取模型"加载模型列表...';
+                } else {
+                    fetchBtn.disabled = true;
+                    document.getElementById('modelSearch').placeholder = '输入 API Key 后点击获取模型...';
+                }
+            });
+
+            // 点击其他地方关闭模型列表
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.model-search-container')) {
+                    document.getElementById('modelList').classList.remove('show');
+                }
+            });
+        });
+
+        // 加载保存的配置
+        async function loadSavedConfig() {
+            try {
+                const response = await fetch(`${API_BASE}/saved-config`);
+                const data = await response.json();
+                
+                if (data.saved && data.config) {
+                    const config = data.config;
+                    if (config.baseUrl) {
+                        document.getElementById('baseUrl').value = config.baseUrl;
+                    }
+                    if (config.model) {
+                        document.getElementById('modelSearch').value = config.model;
+                        document.getElementById('selectedModel').value = config.model;
+                    }
+                    if (config.hasKey) {
+                        document.getElementById('savedIndicator').style.display = 'inline';
+                        log('检测到保存的配置，请输入 API Key', 'info');
+                        document.getElementById('modelSearch').placeholder = '已保存配置，请输入 API Key';
+                    }
+                }
+            } catch (error) {
+                console.log('加载保存配置失败:', error);
+            }
+        }
+
+        // 获取模型列表
+        async function fetchModels() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const fetchBtn = document.getElementById('fetchModelsBtn');
+            
+            if (!apiKey) {
+                log('请输入 API Key', 'warning');
+                return;
+            }
+            
+            fetchBtn.disabled = true;
+            fetchBtn.innerHTML = '<span class="loading"></span> 获取中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/models`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        apiKey: apiKey,
+                        baseUrl: baseUrl
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableModels = data.models;
+                    filteredModels = availableModels;
+                    log(`成功获取 ${availableModels.length} 个模型`, 'success');
+                    displayModels(availableModels);
+                    document.getElementById('modelList').classList.add('show');
+                } else {
+                    log(`获取模型失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`获取模型出错: ${error.message}`, 'error');
+            } finally {
+                fetchBtn.disabled = false;
+                fetchBtn.innerHTML = '📥 获取模型列表';
+            }
+        }
+
+        // 显示模型列表
+        function displayModels(models) {
+            const modelList = document.getElementById('modelList');
+            
+            if (models.length === 0) {
+                modelList.innerHTML = '<div class="no-models">没有找到匹配的模型</div>';
+                return;
+            }
+            
+            // 显示前50个模型
+            const displayModels = models.slice(0, 50);
+            
+            modelList.innerHTML = `
+                <div class="model-list-header">
+                    找到 ${models.length} 个模型，显示前50个
+                </div>
+                ${displayModels.map(model => `
+                    <div class="model-item" onclick="selectModel('${model.id}')" data-model-id="${model.id}">
+                        <div class="model-item-name">${model.id}</div>
+                        <div class="model-item-info">创建于: ${new Date(model.created * 1000).toLocaleDateString()}</div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // 过滤模型
+        function filterModels() {
+            const searchTerm = document.getElementById('modelSearch').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredModels = availableModels;
+            } else {
+                filteredModels = availableModels.filter(model => 
+                    model.id.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            displayModels(filteredModels);
+            document.getElementById('modelList').classList.add('show');
+        }
+
+        // 切换模型列表显示
+        function toggleModelList() {
+            if (availableModels.length > 0) {
+                const modelList = document.getElementById('modelList');
+                modelList.classList.toggle('show');
+            }
+        }
+
+        // 选择模型
+        function selectModel(modelId) {
+            document.getElementById('modelSearch').value = modelId;
+            document.getElementById('selectedModel').value = modelId;
+            document.getElementById('modelList').classList.remove('show');
+            
+            // 更新选中状态
+            document.querySelectorAll('.model-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.modelId === modelId) {
+                    item.classList.add('selected');
+                }
+            });
+            
+            log(`已选择模型: ${modelId}`, 'info');
+        }
+
+        // 更新并行数量显示
+        function updateParallelCount(value) {
+            document.getElementById('parallelCountValue').textContent = value;
+        }
+
+        // 加载示例
+        function loadExample() {
+            const taskInput = document.getElementById('taskInput');
+            const randomTask = exampleTasks[Math.floor(Math.random() * exampleTasks.length)];
+            taskInput.value = randomTask;
+            log('已加载示例任务', 'info');
+        }
+
+        // 清空任务
+        function clearTask() {
+            document.getElementById('taskInput').value = '';
+            document.getElementById('resultOutput').innerHTML = `
+                <div style="color: var(--text-muted); text-align: center; padding: 40px;">
+                    等待执行完成...
+                </div>
+            `;
+            document.getElementById('resultMeta').style.display = 'none';
+            document.getElementById('decompositionResult').innerHTML = `
+                <div style="color: var(--text-muted); text-align: center; padding: 40px;">
+                    等待任务执行...
+                </div>
+            `;
+            document.getElementById('executionGrid').innerHTML = `
+                <div style="color: var(--text-muted); text-align: center; padding: 40px; grid-column: 1 / -1;">
+                    等待执行...
+                </div>
+            `;
+            resetStages();
+            log('已清空任务', 'info');
+        }
+
+        // 重置阶段
+        function resetStages() {
+            document.querySelectorAll('.stage').forEach(stage => {
+                stage.classList.remove('active', 'completed', 'error');
+            });
+        }
+
+        // 设置阶段状态
+        function setStage(stageId, status) {
+            const stage = document.getElementById(stageId);
+            stage.classList.remove('active', 'completed', 'error');
+            if (status === 'active') {
+                stage.classList.add('active');
+            } else if (status === 'completed') {
+                stage.classList.add('completed');
+            } else if (status === 'error') {
+                stage.classList.add('error');
+            }
+        }
+
+        // 配置 API
+        async function configureAPI() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const model = document.getElementById('selectedModel').value || document.getElementById('modelSearch').value || 'gpt-4';
+            const configBtn = document.getElementById('configBtn');
+            const saveConfig = document.getElementById('saveConfig').checked;
+            
+            if (!apiKey) {
+                log('请输入 API Key', 'warning');
+                return;
+            }
+
+            if (!model) {
+                log('请选择或输入模型名称', 'warning');
+                return;
+            }
+            
+            configBtn.disabled = true;
+            configBtn.innerHTML = '<span class="loading"></span> 连接中...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        apiKey: apiKey,
+                        baseUrl: baseUrl,
+                        model: model,
+                        saveConfig: saveConfig
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    isConfigured = true;
+                    document.getElementById('apiStatus').className = 'status-indicator status-connected';
+                    document.getElementById('apiStatus').innerHTML = '<span class="status-dot"></span><span>已连接</span>';
+                    document.getElementById('executeBtn').disabled = false;
+                    setStage('stage-config', 'completed');
+                    
+                    if (saveConfig) {
+                        document.getElementById('savedIndicator').style.display = 'inline';
+                        log(`API 配置成功: ${data.message} (配置已保存)`, 'success');
+                    } else {
+                        log(`API 配置成功: ${data.message}`, 'success');
+                    }
+                } else {
+                    log(`配置失败: ${data.error}`, 'error');
+                    setStage('stage-config', 'error');
+                }
+            } catch (error) {
+                log(`连接失败: ${error.message}`, 'error');
+                setStage('stage-config', 'error');
+            } finally {
+                configBtn.disabled = false;
+                configBtn.innerHTML = '连接 API';
+            }
+        }
+
+        // 执行任务
+        async function executeTask() {
+            if (!isConfigured) {
+                log('请先配置 API', 'warning');
+                return;
+            }
+            
+            const task = document.getElementById('taskInput').value.trim();
+            if (!task) {
+                log('请输入任务内容', 'warning');
+                return;
+            }
+            
+            const strategy = document.getElementById('strategy').value;
+            const enableStream = document.getElementById('enableStream').checked;
+            const executeBtn = document.getElementById('executeBtn');
+            
+            executeBtn.disabled = true;
+            executeBtn.innerHTML = '<span class="loading"></span> 执行中...';
+            
+            const statusEl = document.getElementById('executionStatus');
+            statusEl.innerHTML = '<span class="loading"></span> 正在执行任务...</span>';
+            
+            const startTime = Date.now();
+            resetStages();
+            
+            // 清空结果区域
+            document.getElementById('resultOutput').innerHTML = '<div class="streaming-output" id="streamingOutput"></div>';
+            document.getElementById('resultMeta').style.display = 'none';
+            
+            if (enableStream) {
+                // 使用高级流式输出模式 - 实时显示各子 LLM 输出
+                await executeAdvancedMode(task, strategy, startTime);
+            } else {
+                // 非流式输出模式
+                await executeNormalMode(task, strategy, startTime);
+            }
+            
+            executeBtn.disabled = false;
+            executeBtn.innerHTML = '▶ 执行任务';
+        }
+
+        // 高级流式执行模式 - 实时显示各子代理输出
+        async function executeAdvancedMode(task, strategy, startTime) {
+            const statusEl = document.getElementById('executionStatus');
+            const streamingOutput = document.getElementById('streamingOutput');
+            
+            try {
+                // 发送请求 - 使用新的高级 API
+                const response = await fetch(`${API_BASE}/execute/advanced`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        task: task,
+                        strategy: strategy
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                let currentSubtaskId = null;
+                let subtaskOutputs = {};
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                const timestamp = data.timestamp || new Date().toLocaleTimeString();
+                                
+                                // 处理不同类型的事件
+                                switch (data.type) {
+                                    case 'stage':
+                                        // 阶段切换
+                                        handleStageEvent(data, statusEl);
+                                        break;
+                                        
+                                    case 'decomposition':
+                                        // 任务分解完成
+                                        log(`任务分解完成: ${data.subtasks.length} 个子任务`, 'success');
+                                        log(`💡 分解思路: ${data.reasoning.substring(0, 100)}...`, 'info');
+                                        displayDecompositionList(data.subtasks, streamingOutput);
+                                        break;
+                                        
+                                    case 'subtask_start':
+                                        // 子任务开始
+                                        currentSubtaskId = data.subtask_id;
+                                        log(`🔵 [${data.subtask_role}] 开始: ${data.subtask_title}`, 'info');
+                                        displaySubtaskStart(data, streamingOutput);
+                                        break;
+                                        
+                                    case 'subtask_done':
+                                        // 子任务完成
+                                        log(`🟢 [子任务完成] ${data.subtask_title}`, 'success');
+                                        displaySubtaskDone(data, streamingOutput, data.output);
+                                        currentSubtaskId = null;
+                                        break;
+                                        
+                                    case 'progress':
+                                        // 进度更新
+                                        log(data.message, 'info');
+                                        break;
+                                        
+                                    case 'content':
+                                        // 内容输出
+                                        const chunk = data.chunk.replace(/\\n/g, '\n').replace(/\\r/g, '');
+                                        streamingOutput.innerHTML += chunk;
+                                        streamingOutput.scrollTop = streamingOutput.scrollHeight;
+                                        break;
+                                        
+                                    case 'result':
+                                        // 最终结果
+                                        log(`汇总完成，耗时 ${data.time.toFixed(2)}s`, 'success');
+                                        displayFinalResult(data, streamingOutput);
+                                        break;
+                                        
+                                    case 'done':
+                                        // 执行完成
+                                        const elapsed = (Date.now() - startTime) / 1000;
+                                        setStage('stage-complete', 'completed');
+                                        statusEl.innerHTML = '任务执行完成!';
+                                        log(`执行完成! 耗时: ${elapsed.toFixed(2)}s, 子任务: ${data.subtasks}`, 'success');
+                                        
+                                        // 更新统计
+                                        updateStats(elapsed, data.subtasks);
+                                        break;
+                                        
+                                    case 'error':
+                                        // 错误
+                                        log(`错误: ${data.message}`, 'error');
+                                        statusEl.innerHTML = `执行失败: ${data.message}`;
+                                        setStage('stage-decompose', 'error');
+                                        setStage('stage-execute', 'error');
+                                        setStage('stage-aggregate', 'error');
+                                        break;
+                                }
+                            } catch (e) {
+                                // 忽略解析错误
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                log(`执行出错: ${error.message}`, 'error');
+                statusEl.innerHTML = `执行失败: ${error.message}`;
+                setStage('stage-decompose', 'error');
+                setStage('stage-execute', 'error');
+                setStage('stage-aggregate', 'error');
+            }
+        }
+
+        // 处理阶段事件
+        function handleStageEvent(data, statusEl) {
+            switch (data.stage) {
+                case 'decompose':
+                    setStage('stage-decompose', 'active');
+                    statusEl.innerHTML = '<span class="loading"></span> 正在分解任务...';
+                    log('开始任务分解...', 'info');
+                    break;
+                case 'execute':
+                    setStage('stage-decompose', 'completed');
+                    setStage('stage-execute', 'active');
+                    statusEl.innerHTML = '<span class="loading"></span> 正在执行子任务...';
+                    log('开始并行执行子任务...', 'info');
+                    break;
+                case 'aggregate':
+                    setStage('stage-execute', 'completed');
+                    setStage('stage-aggregate', 'active');
+                    statusEl.innerHTML = '<span class="loading"></span> 正在汇总结果...';
+                    log('开始汇总结果...', 'info');
+                    break;
+            }
+        }
+
+        // 显示子任务列表
+        function displayDecompositionList(subtasks, container) {
+            let html = '<div class="subtask-list">';
+            html += '<h3>子任务列表</h3>';
+            
+            for (const subtask of subtasks) {
+                const roleIcon = getRoleIcon(subtask.role);
+                html += `
+                    <div class="subtask-item" id="subtask-${subtask.id}">
+                        <div class="subtask-header">
+                            <span class="subtask-icon">${roleIcon}</span>
+                            <span class="subtask-title">${subtask.title}</span>
+                            <span class="subtask-status pending">等待中</span>
+                        </div>
+                        <div class="subtask-desc">${subtask.description || ''}</div>
+                        <div class="subtask-output" id="output-${subtask.id}"></div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // 显示子任务开始
+        function displaySubtaskStart(data, container) {
+            const subtaskEl = document.getElementById(`subtask-${data.subtask_id}`);
+            if (subtaskEl) {
+                subtaskEl.classList.add('executing');
+                const statusEl = subtaskEl.querySelector('.subtask-status');
+                if (statusEl) {
+                    statusEl.className = 'subtask-status executing';
+                    statusEl.innerHTML = '<span class="loading"></span> 执行中...';
+                }
+            }
+        }
+
+        // 显示子任务完成
+        function displaySubtaskDone(data, container, output) {
+            const subtaskEl = document.getElementById(`subtask-${data.subtask_id}`);
+            if (subtaskEl) {
+                subtaskEl.classList.remove('executing');
+                subtaskEl.classList.add('completed');
+                const statusEl = subtaskEl.querySelector('.subtask-status');
+                if (statusEl) {
+                    statusEl.className = 'subtask-status completed';
+                    statusEl.textContent = '完成';
+                }
+                
+                // 显示输出
+                const outputEl = subtaskEl.querySelector('.subtask-output');
+                if (outputEl) {
+                    outputEl.innerHTML = `<pre>${output}</pre>`;
+                }
+            }
+        }
+
+        // 显示最终结果
+        function displayFinalResult(data, container) {
+            let html = '<div class="final-result">';
+            html += '<h3>最终汇总结果</h3>';
+            html += `<div class="result-content">${data.final_output}</div>`;
+            html += '</div>';
+            container.innerHTML += html;
+        }
+
+        // 获取角色图标
+        function getRoleIcon(role) {
+            const icons = {
+                        'researcher': '',
+                        'analyst': '',
+                        'writer': '',
+                        'coder': '',
+                        'reviewer': '',
+                        'default': ''
+                    };            return icons[role] || icons['default'];
+        }
+
+        // 显示分解结果（旧版本，保留兼容性）
+        function handleStreamEvent(data, statusEl, resultOutput) {
+            switch (data.type) {
+                case 'start':
+                    log(data.message, 'info');
+                    break;
+                    
+                case 'log':
+                    log(data.message, 'info');
+                    if (data.stage === 'decompose') {
+                        setStage('stage-decompose', 'active');
+                        statusEl.textContent = data.message;
+                    } else if (data.stage === 'execute') {
+                        setStage('stage-decompose', 'completed');
+                        setStage('stage-execute', 'active');
+                        statusEl.textContent = data.message;
+                    } else if (data.stage === 'aggregate') {
+                        setStage('stage-execute', 'completed');
+                        setStage('stage-aggregate', 'active');
+                        statusEl.textContent = data.message;
+                    }
+                    break;
+                    
+                case 'decomposition':
+                    log(`任务已分解为 ${data.count} 个子任务`, 'success');
+                    break;
+                    
+                case 'progress':
+                    log(data.message, 'info');
+                    break;
+                    
+                case 'content':
+                    // 实时显示内容
+                    const chunk = data.chunk.replace(/\\n/g, '\n').replace(/\\r/g, '');
+                    resultOutput.innerHTML += chunk;
+                    resultOutput.scrollTop = resultOutput.scrollHeight;
+                    break;
+                    
+                case 'result':
+                    setStage('stage-aggregate', 'completed');
+                    document.getElementById('resultTime').textContent = data.time.toFixed(2) + 's';
+                    document.getElementById('resultSubtasks').textContent = data.subtasks;
+                    break;
+                    
+                case 'done':
+                    log('任务执行完成', 'success');
+                    break;
+                    
+                case 'error':
+                    log(`错误: ${data.message}`, 'error');
+                    break;
+            }
+        }
+
+        // 显示分解结果
+        function displayDecomposition(decomposition) {
+            const container = document.getElementById('decompositionResult');
+            const subtasks = decomposition.subtasks;
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 13px;">
+                    <strong>分解思路:</strong> ${decomposition.reasoning || '无'}
+                </div>
+                ${subtasks.map(subtask => `
+                    <div class="subtask-item">
+                        <div class="subtask-id">子任务 #${subtask.id}</div>
+                        <div class="subtask-title">${subtask.title}</div>
+                        <div class="subtask-agent">👤 角色: ${subtask.agent_role || 'general'}</div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // 显示执行状态
+        function displayExecution(subtasks) {
+            const container = document.getElementById('executionGrid');
+            
+            container.innerHTML = subtasks.map(subtask => `
+                <div class="agent-card" id="agent-${subtask.id}">
+                    <div class="agent-role">${roleIcons[subtask.agent_role] || ''}</div>
+                    <div style="font-weight: 500; margin-bottom: 5px;">${subtask.agent_role || 'Agent'}</div>
+                    <div class="agent-status status-pending" id="status-${subtask.id}">等待中</div>
+                </div>
+            `).join('');
+            
+            // 模拟执行动画
+            subtasks.forEach((subtask, index) => {
+                setTimeout(() => {
+                    const agentCard = document.getElementById(`agent-${subtask.id}`);
+                    const statusEl = document.getElementById(`status-${subtask.id}`);
+                    
+                    if (agentCard && statusEl) {
+                        agentCard.classList.add('executing');
+                        statusEl.className = 'agent-status status-executing';
+                        statusEl.textContent = '执行中...';
+                    }
+                }, index * 500);
+            });
+        }
+
+        // 显示结果
+        function displayResult(result, executionTime) {
+            const output = result.aggregated_result?.final_output || result.final_output || '无输出';
+            
+            document.getElementById('resultOutput').textContent = output;
+            document.getElementById('resultMeta').style.display = 'flex';
+
+            const statusEl = document.getElementById('resultStatus');
+            statusEl.textContent = result.status === 'completed' ? '[成功]' : '[失败] ' + result.status;
+            statusEl.style.color = result.status === 'completed' ? 'var(--success)' : 'var(--danger)';
+            
+            document.getElementById('resultTime').textContent = executionTime.toFixed(2) + 's';
+            document.getElementById('resultSubtasks').textContent = result.execution_summary?.total || result.metadata?.subtask_count || 0;
+            document.getElementById('resultGroups').textContent = result.metadata?.parallel_groups || 0;
+        }
+
+        // 更新统计
+        function updateStats(executionTime, subtaskCount) {
+            stats.totalTasks++;
+            stats.totalSubtasks += subtaskCount;
+            stats.totalTime += executionTime;
+            stats.successCount++;
+            
+            document.getElementById('totalTasks').textContent = stats.totalTasks;
+            document.getElementById('totalSubtasks').textContent = stats.totalSubtasks;
+            
+            const avgTime = stats.totalTasks > 0 ? (stats.totalTime / stats.totalTasks).toFixed(1) : 0;
+            document.getElementById('avgTime').textContent = avgTime + 's';
+            
+            const successRate = stats.totalTasks > 0 ? Math.round((stats.successCount / stats.totalTasks) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', () => {
+            setStage('stage-config', 'active');
+            log('请先配置 API Key', 'info');
+        });
+    </script>
+</body>
+</html>
